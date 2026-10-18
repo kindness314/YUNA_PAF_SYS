@@ -14,7 +14,6 @@ class Settings(BaseSettings):
     database_url: str = "sqlite:///./dev.db"
     redis_url: str = "redis://localhost:6379/0"
 
-    jwt_secret: str = "dev-insecure-secret-change-me"
     jwt_algorithm: str = "HS256"
     jwt_expire_minutes: int = 720
     jwt_secret: str = "dev-insecure-secret-change-me-0123456789abcdef"
