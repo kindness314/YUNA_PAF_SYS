@@ -53,7 +53,7 @@ def create_group(
 def list_groups(
     batch_id: int,
     db: Session = Depends(get_db),
-    user: User = Depends(get_current_user),
+    user: User = Depends(require_roles(Role.admin, Role.staff, Role.interviewer)),
 ):
     return (
         db.query(InterviewGroup)
@@ -123,7 +123,7 @@ async def finish_entry(
 def list_entries(
     group_id: int,
     db: Session = Depends(get_db),
-    user: User = Depends(get_current_user),
+    user: User = Depends(require_roles(Role.admin, Role.staff, Role.interviewer)),
 ):
     return (
         db.query(QueueEntry)
@@ -136,7 +136,7 @@ def list_entries(
 @router.get("/groups/{group_id}/events")
 async def stream_events(
     group_id: int,
-    user: User = Depends(get_current_user),
+    user: User = Depends(require_roles(Role.admin, Role.staff, Role.interviewer)),
 ):
     """叫号大屏/看板 SSE 通道：事件只发"refresh"信号，客户端收到后重拉列表。"""
 

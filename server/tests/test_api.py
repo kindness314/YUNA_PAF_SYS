@@ -177,3 +177,21 @@ def test_exam_answer_publish_gate(client, admin_headers):
     # upsert：再保存仍是同一份（batch_id 唯一），内容可更新
     r = client.put(url, json={"content": "v2", "published": True}, headers=admin_headers)
     assert r.json()["content"] == "v2"
+
+
+def test_queue_read_endpoints_staff_only(client, admin_headers):
+    batch = new_batch(client, admin_headers, "2026秋-队列权限批")
+    g = client.post(
+        "/api/queue/groups", json={"batch_id": batch["id"], "name": "技术组"}, headers=admin_headers
+    )
+    assert g.status_code == 201
+    gid = g.json()["id"]
+    applicant = register_and_login(client, "stu2001")
+
+    # 考生对队列的三个读端点一律 403
+    assert client.get(f"/api/queue/groups?batch_id={batch['id']}", headers=applicant).status_code == 403
+    assert client.get(f"/api/queue/groups/{gid}/entries", headers=applicant).status_code == 403
+    assert client.get(f"/api/queue/groups/{gid}/events", headers=applicant).status_code == 403
+    # 工作人员正常
+    assert client.get(f"/api/queue/groups?batch_id={batch['id']}", headers=admin_headers).status_code == 200
+    assert client.get(f"/api/queue/groups/{gid}/entries", headers=admin_headers).status_code == 200
