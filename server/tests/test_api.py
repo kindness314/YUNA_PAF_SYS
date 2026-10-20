@@ -148,3 +148,32 @@ def test_interview_queue_consistency(client, admin_headers):
 
     entries = client.get(f"/api/queue/groups/{group['id']}/entries", headers=admin_headers).json()
     assert entries[0]["status"] == "done"
+
+
+def test_exam_answer_publish_gate(client, admin_headers):
+    batch = new_batch(client, admin_headers, "2026秋-解析批")
+    applicant = register_and_login(client, "stu1001")
+    url = f"/api/batches/{batch['id']}/exam-answer"
+
+    # 尚无解析：一律 404（不暴露草稿存在性）
+    assert client.get(url, headers=applicant).status_code == 404
+    assert client.get(url, headers=admin_headers).status_code == 404
+    # 考生无权写入
+    assert client.put(url, json={"content": "x", "published": True}, headers=applicant).status_code == 403
+
+    # 管理员存草稿：考生仍 404，管理员可读
+    r = client.put(url, json={"content": "一、参考答案A", "published": False}, headers=admin_headers)
+    assert r.status_code == 200 and r.json()["published"] is False
+    assert client.get(url, headers=applicant).status_code == 404
+    assert client.get(url, headers=admin_headers).json()["content"] == "一、参考答案A"
+
+    # 发布后考生可读，首次发布时间落库
+    r = client.put(url, json={"content": "一、参考答案A", "published": True}, headers=admin_headers)
+    body = r.json()
+    assert body["published"] is True and body["published_at"] is not None
+    got = client.get(url, headers=applicant)
+    assert got.status_code == 200 and got.json()["content"] == "一、参考答案A"
+
+    # upsert：再保存仍是同一份（batch_id 唯一），内容可更新
+    r = client.put(url, json={"content": "v2", "published": True}, headers=admin_headers)
+    assert r.json()["content"] == "v2"

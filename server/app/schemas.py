@@ -170,3 +170,20 @@ class QueueEntryOut(BaseModel):
     seq: int
     status: str
     room: str | None = None
+
+
+# ---------- exam answer ----------
+
+class ExamAnswerIn(BaseModel):
+    content: str = Field(max_length=20000)
+    published: bool = False
+
+
+class ExamAnswerOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    batch_id: int
+    content: str
+    published: bool
+    published_at: dt.datetime | None = None
+    updated_at: dt.datetime | None = None

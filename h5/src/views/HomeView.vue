@@ -21,7 +21,7 @@ function logout() {
     </van-cell-group>
     <van-grid :column-num="2" clickable class="card">
       <van-grid-item icon="edit" text="我要报名" to="/apply" />
-      <van-grid-item icon="notes-o" text="笔试答卷" to="/exam" />
+      <van-grid-item icon="description" text="笔试解析" to="/answer" />
     </van-grid>
     <div class="actions">
       <van-button v-if="!logged" type="primary" block round @click="router.push('/login')">

@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 import app.models  # noqa: F401  确保模型注册到 Base.metadata
 from app.api.routes import (
+    answers,
     applications,
     auth,
     batches,
@@ -59,6 +60,7 @@ for r in (
     health.router,
     auth.router,
     batches.router,
+    answers.router,
     applications.router,
     submissions.router,
     forms.router,
