@@ -31,6 +31,8 @@ def submit(
     app = db.get(Application, body.application_id)
     if app is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "报名记录不存在")
+    if user.role == Role.applicant and app.student_no != user.username:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "只能提交自己的答卷")
     batch = db.get(RecruitmentBatch, app.batch_id)
     if batch.stage != Stage.exam:
         raise HTTPException(

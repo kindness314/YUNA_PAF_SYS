@@ -49,6 +49,13 @@ def apply(
         if user.role == Role.applicant:
             raise HTTPException(status.HTTP_403_FORBIDDEN, "临时报名由现场工作人员录入")
 
+    if user.role == Role.applicant:
+        # 自助报名的身份和免试资格不能由请求体自行指定。
+        if body.student_no != user.username:
+            raise HTTPException(status.HTTP_403_FORBIDDEN, "只能使用本人学号报名")
+        if body.exempt_exam:
+            raise HTTPException(status.HTTP_403_FORBIDDEN, "免笔试资格由工作人员设置")
+
     dup = (
         db.query(Application)
         .filter(
